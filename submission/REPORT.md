@@ -21,14 +21,14 @@
 | 04 — Structured log | [04-structured-log.txt](evidence/04-structured-log.txt) |
 | 05 — PII redaction | [05-pii-redaction.txt](evidence/05-pii-redaction.txt) |
 | 06 — Trace IDs và workload | [06-trace-ids.txt](evidence/06-trace-ids.txt), [06-flushed-workload.txt](evidence/06-flushed-workload.txt) |
-| 07 — Quan hệ observation từ Langfuse API | [07-trace-waterfall.txt](evidence/07-trace-waterfall.txt) |
-| 08 — Metadata từ Langfuse API | [08-trace-metadata.txt](evidence/08-trace-metadata.txt) |
+| 07 — Waterfall Langfuse | [ảnh giao diện](evidence/07-langfuse-waterfall.png), [đối chiếu API](evidence/07-trace-waterfall.txt) |
+| 08 — Metadata generation Langfuse | [ảnh giao diện](evidence/08-langfuse-generation-metadata.png), [đối chiếu API](evidence/08-trace-metadata.txt) |
 | 09 — Prompt versions | [09-prompt-versions.png](evidence/09-prompt-versions.png) |
 | 10 — Promote và rollback | [promote](evidence/10-prompt-promoted.png), [rollback](evidence/10-prompt-rollback.png) |
 | 11 — Dashboard runtime | [ảnh](evidence/11-dashboard-overview.png), [scenario](evidence/11-practice-scenarios.txt) |
 | 12 — Incident metric và workload | [ảnh dashboard](evidence/12-incident-metric.png), [metric](evidence/12-incident-metric.txt), [workload](evidence/12-challenge-workload.txt), [injection](evidence/12-incident-injection.txt) |
 | 13 — Incident log | [ảnh](evidence/13-incident-log.png), [text đầy đủ](evidence/13-incident-log.txt) |
-| 14 — Incident trace và khôi phục | [trace](evidence/14-incident-trace.txt), [cả 5 trace](evidence/14-challenge-trace-list.txt), [disable](evidence/12-incident-disabled.txt), [post-disable](evidence/14-post-disable-metrics.txt) |
+| 14 — Incident trace và khôi phục | [ảnh timeline Langfuse](evidence/14-incident-langfuse-timeline.png), [trace API](evidence/14-incident-trace.txt), [cả 5 trace](evidence/14-challenge-trace-list.txt), [disable](evidence/12-incident-disabled.txt), [post-disable](evidence/14-post-disable-metrics.txt) |
 
 ## 3. Kết quả kỹ thuật tại CP2
 
@@ -53,7 +53,7 @@ Workload thực hành có 19 requests, 3 lỗi, error rate 15.79%, tổng cost 0
 
 ## 5. Tracing và prompt versioning
 
-Tôi tạo workload trong project cá nhân `day13-k4-l3a-2A202602871` và đối chiếu [12 trace IDs với correlation IDs](evidence/06-trace-ids.txt) qua Langfuse. Root `lab-agent-run` có child `retrieval` (doc count, success) và `llm-generation` (model, token, cost, prompt name/version/label). `correlation_id` nối response header, log và trace.
+Tôi tạo workload trong project cá nhân `day13-k4-l3a-2A202602871` và đối chiếu [12 trace IDs với correlation IDs](evidence/06-trace-ids.txt) qua Langfuse. [Ảnh waterfall](evidence/07-langfuse-waterfall.png) hiển thị root `lab-agent-run` có child `retrieval` và `llm-generation`; [ảnh metadata](evidence/08-langfuse-generation-metadata.png) hiển thị model, 130 tokens, cost 0.001614 USD, prompt v1 nhãn `production` và `correlation_id=req-b2fb4a6a`. Metadata retrieval ghi doc count và success. `correlation_id` nối response header, log và trace.
 
 Prompt `day13-chat` v1 là `baseline`, v2 là `candidate`. Cùng input “Explain how monitoring identifies a slow request.” đã tạo v1 trace `a54db286469527380fcf28a697520e07` (`req-b63178fb`) và v2 trace `fac7b3cf83786d6f32b42266ae5c2657` (`req-c39746ff`). Tôi promote `production` sang v2 rồi rollback về v1. Trạng thái cuối là v1 `baseline` + `production`, v2 `candidate` + `latest`: [ảnh promote](evidence/10-prompt-promoted.png), [ảnh rollback](evidence/10-prompt-rollback.png).
 
@@ -71,7 +71,7 @@ Tôi nhận nguyên file `K4-L3A-challenge.json` từ Lab Coach và đặt vào 
 
 **Khoảng điều tra:** 2026-09-29 09:33:02–09:33:17 UTC. [Metric từ log và dashboard](evidence/12-incident-metric.txt) ghi 5/5 request vượt 2000 ms, latency P50 2664 ms, P95/P99 4144 ms, TTFT P95 55 ms, error rate 0%. Đây là sự cố chậm, không phải lỗi HTTP.
 
-**Request đại diện:** [log](evidence/13-incident-log.txt) có `response_sent` 4144 ms và `correlation_id=req-4f616e78`. [Trace Langfuse](evidence/14-incident-trace.txt) cùng ID là `8719140eeecfd554de8989ccffc7e4ec`: root `lab-agent-run` 4.145 s; child `retrieval` 2.505 s; child `llm-generation` 0.153 s. Span retrieval chiếm phần lớn thời gian. Request đầu còn có overhead lấy prompt, nhưng bốn trace còn lại đều có retrieval ~2.505 s và tổng ~2.66 s, nên kết luận không phụ thuộc request đầu.
+**Request đại diện:** [log](evidence/13-incident-log.txt) có `response_sent` 4144 ms và `correlation_id=req-4f616e78`. [Ảnh timeline Langfuse](evidence/14-incident-langfuse-timeline.png) và [trace API](evidence/14-incident-trace.txt) cùng ID là `8719140eeecfd554de8989ccffc7e4ec`: root `lab-agent-run` 4.145 s; child `retrieval` 2.505 s; child `llm-generation` 0.153 s. Span retrieval chiếm phần lớn thời gian. Request đầu còn có overhead lấy prompt, nhưng bốn trace còn lại đều có retrieval ~2.505 s và tổng ~2.66 s, nên kết luận không phụ thuộc request đầu.
 
 **Root cause:** incident `rag_slow` bật nhánh giả lập delay 2.5 giây trong `app/mock_rag.py::retrieve`. **Fix action:** tắt `rag_slow` sau điều tra và xác minh bằng cùng 5 query; [log sau khi tắt](evidence/14-post-disable-metrics.txt) còn 156–159 ms, đều dưới ngưỡng 2000 ms. Trong hệ thống thật, xử lý nguồn retrieval chậm (vector store/index/network), đặt timeout và fallback có kiểm soát. **Preventive measure:** theo dõi P95 retrieval riêng, alert khi retrieval >2 s liên tục, kiểm tra sức khỏe/index của vector store và lưu trace có correlation ID cho mỗi request. Cờ incident hiện đã tắt.
 
