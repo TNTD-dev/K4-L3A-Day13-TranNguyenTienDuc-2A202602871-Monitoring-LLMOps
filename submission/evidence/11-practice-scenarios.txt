@@ -1,0 +1,27 @@
+baseline 0 status 200 correlation_id req-62fb47f5 latency_ms 153 cost_usd 0.00267 detail None
+baseline 1 status 200 correlation_id req-e9056305 latency_ms 157 cost_usd 0.002595 detail None
+baseline 2 status 200 correlation_id req-10c17892 latency_ms 152 cost_usd 0.0024 detail None
+baseline 3 status 200 correlation_id req-27502196 latency_ms 156 cost_usd 0.002505 detail None
+baseline 4 status 200 correlation_id req-2d82a79c latency_ms 156 cost_usd 0.00165 detail None
+baseline 5 status 200 correlation_id req-2ea35e4d latency_ms 155 cost_usd 0.00141 detail None
+baseline 6 status 200 correlation_id req-0ba1c5ba latency_ms 153 cost_usd 0.00159 detail None
+baseline 7 status 200 correlation_id req-7cfd9bb5 latency_ms 156 cost_usd 0.001575 detail None
+baseline 8 status 200 correlation_id req-5a4eeb7c latency_ms 153 cost_usd 0.001485 detail None
+baseline 9 status 200 correlation_id req-78ddca43 latency_ms 159 cost_usd 0.00264 detail None
+{"service": "control", "payload": {"name": "rag_slow"}, "event": "incident_enabled", "correlation_id": "req-48d867c6", "level": "warning", "ts": "2026-09-29T08:33:56.852684Z"}
+rag_slow 0 status 200 correlation_id req-2b50d577 latency_ms 2661 cost_usd 0.00219 detail None
+rag_slow 1 status 200 correlation_id req-345a32cb latency_ms 2663 cost_usd 0.002325 detail None
+rag_slow 2 status 200 correlation_id req-b4abe6d4 latency_ms 2661 cost_usd 0.002265 detail None
+{"service": "control", "payload": {"name": "rag_slow"}, "event": "incident_disabled", "correlation_id": "req-1df40f31", "level": "warning", "ts": "2026-09-29T08:34:04.848782Z"}
+{"service": "control", "payload": {"name": "tool_fail"}, "event": "incident_enabled", "correlation_id": "req-b9fc0bef", "level": "warning", "ts": "2026-09-29T08:34:04.850335Z"}
+tool_fail 0 status 500 correlation_id req-de2b927d latency_ms None cost_usd None detail RuntimeError
+tool_fail 1 status 500 correlation_id req-2e8b84cc latency_ms None cost_usd None detail RuntimeError
+tool_fail 2 status 500 correlation_id req-a416be64 latency_ms None cost_usd None detail RuntimeError
+{"service": "control", "payload": {"name": "tool_fail"}, "event": "incident_disabled", "correlation_id": "req-e9b86159", "level": "warning", "ts": "2026-09-29T08:34:04.860190Z"}
+{"service": "control", "payload": {"name": "cost_spike"}, "event": "incident_enabled", "correlation_id": "req-049a26c1", "level": "warning", "ts": "2026-09-29T08:34:04.861348Z"}
+cost_spike 0 status 200 correlation_id req-4039aa04 latency_ms 156 cost_usd 0.009225 detail None
+cost_spike 1 status 200 correlation_id req-6e278bb4 latency_ms 155 cost_usd 0.007425 detail None
+cost_spike 2 status 200 correlation_id req-79463987 latency_ms 159 cost_usd 0.009885 detail None
+{"service": "control", "payload": {"name": "cost_spike"}, "event": "incident_disabled", "correlation_id": "req-ff75adba", "level": "warning", "ts": "2026-09-29T08:34:05.341280Z"}
+incident_state {'rag_slow': False, 'tool_fail': False, 'cost_spike': False}
+dashboard_window=60m refresh=30s summary={'latency_p50_ms': 156.0, 'latency_p95_ms': 2663.0, 'latency_p99_ms': 2663.0, 'ttft_p95_ms': 55.0, 'request_count': 19, 'request_rate_per_minute': 0.32, 'error_rate_pct': 15.79, 'error_breakdown': {'RuntimeError': 3}, 'retrieval_success_pct': 84.21, 'cost_total_usd': 0.053835, 'cost_per_request_usd': 0.003365, 'tokens_in': 560, 'tokens_out': 3477, 'quality_mean': 0.8}

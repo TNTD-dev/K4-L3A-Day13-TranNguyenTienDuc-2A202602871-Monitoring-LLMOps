@@ -1,0 +1,24 @@
+Runtime structured log from data/logs.jsonl:
+{
+  "service": "api",
+  "latency_ms": 153,
+  "ttft_ms": 51,
+  "tokens_in": 35,
+  "tokens_out": 171,
+  "cost_usd": 0.00267,
+  "quality_score": 0.8,
+  "tool_name": "retrieval",
+  "tool_success": true,
+  "payload": {
+    "answer_preview": "Starter answer. You should improve this output logic and add better quality chec..."
+  },
+  "event": "response_sent",
+  "session_id": "baseline-0",
+  "user_id_hash": "ada750e3f846",
+  "correlation_id": "req-62fb47f5",
+  "model": "claude-sonnet-4-5",
+  "env": "dev",
+  "feature": "qa",
+  "level": "info",
+  "ts": "2026-09-29T08:33:55.434418Z"
+}

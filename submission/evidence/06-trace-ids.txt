@@ -1,0 +1,15 @@
+Langfuse project: day13-k4-l3a-2A202602871
+Verified managed-prompt traces: 12
+trace_id correlation_id prompt_version prompt_label
+fac7b3cf83786d6f32b42266ae5c2657 req-c39746ff 2 candidate
+2c882234765720b52285d9bd1010746f req-b2fb4a6a 1 production
+512d5f3bde2dc13e388bb328f2390f94 req-68e02caa 1 production
+8fcea1aef13ed1a3c9b228be49c96c8e req-c22a0671 1 production
+5db2f9a1076d06a31f35301fe93f1777 req-fc931d49 1 production
+e83c3a4931bd10cc945b2459f9f251a7 req-1c7c1391 1 production
+6e722406f5a12483deb8423e2aedb572 req-6edb3e2a 1 production
+a186be7ab25cd2d4912a9de3e465e015 req-9c73f4bb 1 production
+2b5cf06454b757b0e189e059f72657a1 req-1bf5c5c2 1 production
+aa2fbe9e34f3f9cebf9d4530c582e963 req-1b50ff80 1 production
+d2ea5c06034dec2ee78066c7f958cc7d req-e7a2b6ff 1 production
+a54db286469527380fcf28a697520e07 req-b63178fb 1 production

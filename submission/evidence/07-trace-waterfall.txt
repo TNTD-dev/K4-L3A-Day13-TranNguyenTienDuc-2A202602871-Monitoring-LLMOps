@@ -1,0 +1,7 @@
+Langfuse project: day13-k4-l3a-2A202602871
+Trace: 2c882234765720b52285d9bd1010746f
+Trace name: day13-agent-request
+Correlation ID: req-b2fb4a6a
+Root: lab-agent-run | AGENT | observation_id=5ec55f6b467eb25f | parent=null
+  Child: retrieval | RETRIEVER | observation_id=f03bbbe048c67d8b | parent=5ec55f6b467eb25f | duration=0 s
+  Child: llm-generation | GENERATION | observation_id=f8ad9655f65e79e0 | parent=5ec55f6b467eb25f | duration=0.16 s

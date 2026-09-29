@@ -1,25 +1,28 @@
 alerts:
-  - name: TODO_alert_1
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: User-facing latency degraded
+    severity: critical
+    condition: 'p95(response_sent.latency_ms, 5m) > 3000 and count(request_received, 5m) >= 5'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#llmops-alerts'
+    owner: AI API on-call
     runbook: docs/alerts.md#alert-1
-  - name: TODO_alert_2
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: Request failure rate elevated
+    severity: critical
+    condition: 'count(request_failed, 5m) / count(request_received, 5m) * 100 > 2 and count(request_received, 5m) >= 5'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#llmops-alerts'
+    owner: AI API on-call
     runbook: docs/alerts.md#alert-2
-  - name: TODO_alert_3
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: Cost per answer elevated
+    severity: warning
+    condition: 'mean(response_sent.cost_usd, 10m) > 0.004 and count(response_sent, 10m) >= 5'
+    duration: 10m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#llmops-alerts'
+    owner: LLMOps on-call
     runbook: docs/alerts.md#alert-3

@@ -1,0 +1,6 @@
+PII redaction using synthetic inputs; raw values intentionally omitted from committed evidence.
+email: input=<synthetic email>; serialized log payload=Contact [REDACTED_EMAIL]
+phone_vn: input=<synthetic phone_vn>; serialized log payload=Contact [REDACTED_PHONE_VN]
+cccd: input=<synthetic cccd>; serialized log payload=Contact [REDACTED_CCCD]
+credit_card: input=<synthetic credit_card>; serialized log payload=Contact [REDACTED_CREDIT_CARD]
+Full log validator PII leaks: 0 (see 02-log-validator.txt).
