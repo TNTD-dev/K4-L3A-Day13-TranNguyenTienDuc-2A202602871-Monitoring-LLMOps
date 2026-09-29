@@ -1,0 +1,5 @@
+Challenge: day13-k4-l3a-monitoring-llmops-v1
+After official rag_slow incident disabled
+Response latencies (ms): [159, 159, 156, 158, 159]
+Max latency: 159 ms
+All five are under challenge threshold 2000 ms.

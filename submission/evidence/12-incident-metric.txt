@@ -1,0 +1,12 @@
+Challenge ID: day13-k4-l3a-monitoring-llmops-v1
+Cohort: K4-L3A
+Incident: rag_slow
+Affected feature: monitoring
+UTC interval: 2026-09-29T09:33:02.914546Z to 2026-09-29T09:33:17.751507Z
+Dashboard window: 60 minutes
+Dashboard P50/P95/P99 latency (ms): (2664.0, 4144.0, 4144.0)
+TTFT P95 (ms): 55.0
+Request count: 5
+Error rate (%): 0.0
+Slow above challenge threshold 2000ms: 5/5
+Source: application JSONL and /dashboard/data; input challenge file was not modified.

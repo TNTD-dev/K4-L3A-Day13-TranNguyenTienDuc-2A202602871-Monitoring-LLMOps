@@ -6,8 +6,8 @@
 - **MSSV:** 2A202602871
 - **Lớp:** K4-L3A
 - **Repository:** https://github.com/TNTD-dev/K4-L3A-Day13-TranNguyenTienDuc-2A202602871-Monitoring-LLMOps
-- **Commit SHA cuối:** chờ CP3 và bản nộp cuối
-- **Challenge ID:** chờ file gốc từ Lab Coach
+- **Commit SHA cuối:** lấy từ `git rev-parse HEAD` của bản đã push và gửi cùng URL repository trên LMS; không tự ghi SHA vào chính commit vì thao tác đó sẽ đổi SHA.
+- **Challenge ID:** `day13-k4-l3a-monitoring-llmops-v1`
 - **Project Langfuse cá nhân:** `day13-k4-l3a-2A202602871`
 
 ## 2. Evidence index
@@ -26,7 +26,9 @@
 | 09 — Prompt versions | [09-prompt-versions.png](evidence/09-prompt-versions.png) |
 | 10 — Promote và rollback | [promote](evidence/10-prompt-promoted.png), [rollback](evidence/10-prompt-rollback.png) |
 | 11 — Dashboard runtime | [ảnh](evidence/11-dashboard-overview.png), [scenario](evidence/11-practice-scenarios.txt) |
-| 12–14 — Challenge chính thức | chờ CP3 |
+| 12 — Incident metric và workload | [ảnh dashboard](evidence/12-incident-metric.png), [metric](evidence/12-incident-metric.txt), [workload](evidence/12-challenge-workload.txt), [injection](evidence/12-incident-injection.txt) |
+| 13 — Incident log | [ảnh](evidence/13-incident-log.png), [text đầy đủ](evidence/13-incident-log.txt) |
+| 14 — Incident trace và khôi phục | [trace](evidence/14-incident-trace.txt), [cả 5 trace](evidence/14-challenge-trace-list.txt), [disable](evidence/12-incident-disabled.txt), [post-disable](evidence/14-post-disable-metrics.txt) |
 
 ## 3. Kết quả kỹ thuật tại CP2
 
@@ -59,27 +61,33 @@ LLM của lab là FakeLLM; token/cost là mô phỏng, không phải hóa đơn 
 
 ## 6. Dashboard, SLO và alerts
 
-`/dashboard` dùng `/dashboard/data` từ `data/logs.jsonl`, mặc định 60 phút và làm mới mỗi 30 giây. Sáu panel: latency/TTFT, traffic, errors/retrieval, cost, tokens, quality. Có đơn vị và threshold. [Ảnh dashboard](evidence/11-dashboard-overview.png) là snapshot trước đợt scenario; [output scenario](evidence/11-practice-scenarios.txt) ghi số liệu mới: `rag_slow` tăng latency lên khoảng 2.66 s; `tool_fail` tạo 3 lỗi và giảm retrieval success còn 84.21%; `cost_spike` tạo cost/request 0.007425–0.009885 USD. Xem [nguồn tính toán](../app/dashboard_data.py) và [contract](../config/dashboard.yaml).
+`/dashboard` dùng `/dashboard/data` từ `data/logs.jsonl`, mặc định 60 phút và làm mới mỗi 30 giây. Sáu panel: latency/TTFT, traffic, errors/retrieval, cost, tokens, quality. Có đơn vị và threshold. [Ảnh dashboard](evidence/11-dashboard-overview.png) là snapshot sau challenge chính thức và sau khi tắt incident, vì vậy hiển thị cả 10 request trong cùng cửa sổ 60 phút. [Output scenario CP2](evidence/11-practice-scenarios.txt) ghi riêng: `rag_slow` tăng latency lên khoảng 2.66 s; `tool_fail` tạo 3 lỗi và giảm retrieval success còn 84.21%; `cost_spike` tạo cost/request 0.007425–0.009885 USD. Xem [nguồn tính toán](../app/dashboard_data.py) và [contract](../config/dashboard.yaml).
 
 [SLO](../config/slo.yaml): trong 28 ngày, ít nhất 99.5% request hoàn tất thành công trong ≤3 giây. Error budget 0.5% tổng request, tức tối đa 50 request lỗi hoặc chậm trên 10,000 request. Ba [alert](../config/alert_rules.yaml) theo triệu chứng: P95 latency >3 s trong 5 phút, error rate >2% trong 5 phút, cost/answer >0.004 USD trong 10 phút. Mỗi rule có severity, owner, Slack channel và [runbook](../docs/alerts.md).
 
-## 7. Challenge chính thức — chờ CP3
+## 7. Điều tra challenge chính thức
 
-Lab Coach chưa phát file `config/challenge.json` gốc. Tôi không suy diễn challenge ID hoặc dùng scenario luyện tập thay thế. Khi nhận nguyên file, sẽ chạy workload, thu metric bất thường (12), log có correlation ID (13), trace cùng ID và span gây ảnh hưởng (14), rồi ghi khoảng thời gian, root cause, fix action và preventive measure. File gốc thuộc `.gitignore` và không commit.
+Tôi nhận nguyên file `K4-L3A-challenge.json` từ Lab Coach và đặt vào `config/challenge.json`; so sánh byte cho thấy file không đổi. ID `day13-k4-l3a-monitoring-llmops-v1`, seed 1311, feature `monitoring`, incident `rag_slow`, ngưỡng challenge 2000 ms. File gốc thuộc `.gitignore` và không được commit.
+
+**Khoảng điều tra:** 2026-09-29 09:33:02–09:33:17 UTC. [Metric từ log và dashboard](evidence/12-incident-metric.txt) ghi 5/5 request vượt 2000 ms, latency P50 2664 ms, P95/P99 4144 ms, TTFT P95 55 ms, error rate 0%. Đây là sự cố chậm, không phải lỗi HTTP.
+
+**Request đại diện:** [log](evidence/13-incident-log.txt) có `response_sent` 4144 ms và `correlation_id=req-4f616e78`. [Trace Langfuse](evidence/14-incident-trace.txt) cùng ID là `8719140eeecfd554de8989ccffc7e4ec`: root `lab-agent-run` 4.145 s; child `retrieval` 2.505 s; child `llm-generation` 0.153 s. Span retrieval chiếm phần lớn thời gian. Request đầu còn có overhead lấy prompt, nhưng bốn trace còn lại đều có retrieval ~2.505 s và tổng ~2.66 s, nên kết luận không phụ thuộc request đầu.
+
+**Root cause:** incident `rag_slow` bật nhánh giả lập delay 2.5 giây trong `app/mock_rag.py::retrieve`. **Fix action:** tắt `rag_slow` sau điều tra và xác minh bằng cùng 5 query; [log sau khi tắt](evidence/14-post-disable-metrics.txt) còn 156–159 ms, đều dưới ngưỡng 2000 ms. Trong hệ thống thật, xử lý nguồn retrieval chậm (vector store/index/network), đặt timeout và fallback có kiểm soát. **Preventive measure:** theo dõi P95 retrieval riêng, alert khi retrieval >2 s liên tục, kiểm tra sức khỏe/index của vector store và lưu trace có correlation ID cho mỗi request. Cờ incident hiện đã tắt.
 
 ## 8. Giải thích và tự đánh giá
 
 Quyết định kỹ thuật chính là dùng một `correlation_id` từ response tới log và Langfuse. Metrics chỉ ra triệu chứng và thời điểm; log lọc request cụ thể; trace cùng ID chỉ ra retrieval hay generation gây ảnh hưởng. Scenario `tool_fail` tăng error rate và ghi `request_failed` cho retrieval; `rag_slow` làm span retrieval kéo dài. Kết luận CP3 phải dựa vào metric, log và trace cùng một sự cố.
 
-Blocker thực tế: server đã ghi log nhưng Langfuse exporter có lúc chưa flush trước khi tiến trình dừng, nên trace chưa xuất hiện trên cloud. Tôi chạy workload có flush rõ ràng và kiểm tra trace ID từ Langfuse trước khi lưu evidence. Nếu prompt fetch lỗi, ứng dụng dùng local fallback và ghi `prompt_source`/`prompt_fetch_error`; trace fallback không tính là managed-prompt trace.
+Blocker thực tế: server đã ghi log nhưng Langfuse exporter có lúc chưa flush trước khi tiến trình dừng, nên trace chưa xuất hiện trên cloud. Tôi chạy workload có flush rõ ràng và kiểm tra trace ID từ Langfuse trước khi lưu evidence. Với challenge chính thức, tôi xác minh cả 5 trace trên Langfuse API trước khi kết luận. Nếu prompt fetch lỗi, ứng dụng dùng local fallback và ghi `prompt_source`/`prompt_fetch_error`; trace fallback không tính là managed-prompt trace.
 
-Prompt version gắn kết quả với cấu hình đã dùng; promote/rollback cho phép đổi và khôi phục hành vi. Token/cost phát hiện tăng chi phí; SLO và error budget lượng hóa chất lượng phục vụ. Hạn chế: LLM và quality score chỉ là mô phỏng; CP3, SHA cuối và LMS còn chờ challenge gốc.
+Prompt version gắn kết quả với cấu hình đã dùng; promote/rollback cho phép đổi và khôi phục hành vi. Token/cost phát hiện tăng chi phí; SLO và error budget lượng hóa chất lượng phục vụ. Hạn chế: LLM và quality score chỉ là mô phỏng; SHA cuối và nộp LMS sẽ xác nhận sau push.
 
 ## 9. Checklist trước khi nộp
 
 - [x] CP0–CP2 có source, validator, prompt và evidence runtime.
 - [x] Project Langfuse cá nhân đúng quy ước, không đưa secret vào repo.
-- [ ] CP3 metric → log → trace và root cause từ challenge chính thức.
-- [ ] Cập nhật SHA cuối, kiểm tra mọi evidence thuộc commit đó, push và tự nộp LMS.
+- [x] CP3 metric → log → trace và root cause từ challenge chính thức.
+- [ ] Gửi SHA cuối và URL repository trên LMS/Codelabs sau khi push.
 
 Tên repository hiện tại được giữ theo lựa chọn đã chốt, dù khác mẫu trong [hướng dẫn nộp](../docs/SUBMISSION.md); có rủi ro bị yêu cầu đổi tên.
