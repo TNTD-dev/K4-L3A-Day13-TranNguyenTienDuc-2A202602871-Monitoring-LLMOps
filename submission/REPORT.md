@@ -20,9 +20,9 @@
 | 03 — Dashboard validator | [03-dashboard-validator.txt](evidence/03-dashboard-validator.txt) |
 | 04 — Structured log | [04-structured-log.txt](evidence/04-structured-log.txt) |
 | 05 — PII redaction | [05-pii-redaction.txt](evidence/05-pii-redaction.txt) |
-| 06 — Trace IDs và workload | [06-trace-ids.txt](evidence/06-trace-ids.txt), [06-flushed-workload.txt](evidence/06-flushed-workload.txt) |
+| 06 — 12 trace IDs đã xác minh và workload | [danh sách trace](evidence/06-trace-ids.txt), [workload](evidence/06-flushed-workload.txt) |
 | 07 — Waterfall Langfuse | [ảnh giao diện](evidence/07-langfuse-waterfall.png), [đối chiếu API](evidence/07-trace-waterfall.txt) |
-| 08 — Metadata generation Langfuse | [ảnh giao diện](evidence/08-langfuse-generation-metadata.png), [đối chiếu API](evidence/08-trace-metadata.txt) |
+| 08 — Metadata generation Langfuse | [output Langfuse API](evidence/08-trace-metadata.txt) |
 | 09 — Prompt versions | [09-prompt-versions.png](evidence/09-prompt-versions.png) |
 | 10 — Promote và rollback | [promote](evidence/10-prompt-promoted.png), [rollback](evidence/10-prompt-rollback.png) |
 | 11 — Dashboard runtime | [ảnh](evidence/11-dashboard-overview.png), [scenario](evidence/11-practice-scenarios.txt) |
@@ -53,9 +53,9 @@ Workload thực hành có 19 requests, 3 lỗi, error rate 15.79%, tổng cost 0
 
 ## 5. Tracing và prompt versioning
 
-Tôi tạo workload trong project cá nhân `day13-k4-l3a-2A202602871` và đối chiếu [12 trace IDs với correlation IDs](evidence/06-trace-ids.txt) qua Langfuse. [Ảnh waterfall](evidence/07-langfuse-waterfall.png) hiển thị root `lab-agent-run` có child `retrieval` và `llm-generation`; [ảnh metadata](evidence/08-langfuse-generation-metadata.png) hiển thị model, 130 tokens, cost 0.001614 USD, prompt v1 nhãn `production` và `correlation_id=req-b2fb4a6a`. Metadata retrieval ghi doc count và success. `correlation_id` nối response header, log và trace.
+Tôi tạo workload trong project cá nhân `day13-k4-l3a-2A202602871` và đối chiếu [12 trace IDs với correlation IDs](evidence/06-trace-ids.txt) qua Langfuse. [Ảnh waterfall](evidence/07-langfuse-waterfall.png) hiển thị root `lab-agent-run` có child `retrieval` và `llm-generation`; [metadata xuất từ Langfuse API](evidence/08-trace-metadata.txt) ghi model, 130 tokens, cost 0.001614 USD, prompt v1 nhãn `production` và `correlation_id=req-b2fb4a6a`. Metadata retrieval ghi doc count và success. `correlation_id` nối response header, log và trace.
 
-Prompt `day13-chat` v1 là `baseline`, v2 là `candidate`. Cùng input “Explain how monitoring identifies a slow request.” đã tạo v1 trace `a54db286469527380fcf28a697520e07` (`req-b63178fb`) và v2 trace `fac7b3cf83786d6f32b42266ae5c2657` (`req-c39746ff`). Tôi promote `production` sang v2 rồi rollback về v1. Trạng thái cuối là v1 `baseline` + `production`, v2 `candidate` + `latest`: [ảnh promote](evidence/10-prompt-promoted.png), [ảnh rollback](evidence/10-prompt-rollback.png).
+Prompt `day13-chat` v1 là `baseline`, v2 là `candidate`. Tôi soạn nội dung trên máy dev, tạo hai version trên Langfuse bằng API (giao diện ghi “by API”), rồi ứng dụng tải prompt theo label. Cùng input “Explain how monitoring identifies a slow request.” đã tạo v1 trace `a54db286469527380fcf28a697520e07` (`req-b63178fb`) và v2 trace `fac7b3cf83786d6f32b42266ae5c2657` (`req-c39746ff`). Tôi promote `production` sang v2 rồi rollback về v1. Trạng thái cuối là v1 `baseline` + `production`, v2 `candidate` + `latest`: [ảnh promote](evidence/10-prompt-promoted.png), [ảnh rollback](evidence/10-prompt-rollback.png).
 
 LLM của lab là FakeLLM; token/cost là mô phỏng, không phải hóa đơn model thật.
 
@@ -82,6 +82,8 @@ Quyết định kỹ thuật chính là dùng một `correlation_id` từ respon
 Blocker thực tế: server đã ghi log nhưng Langfuse exporter có lúc chưa flush trước khi tiến trình dừng, nên trace chưa xuất hiện trên cloud. Tôi chạy workload có flush rõ ràng và kiểm tra trace ID từ Langfuse trước khi lưu evidence. Với challenge chính thức, tôi xác minh cả 5 trace trên Langfuse API trước khi kết luận. Nếu prompt fetch lỗi, ứng dụng dùng local fallback và ghi `prompt_source`/`prompt_fetch_error`; trace fallback không tính là managed-prompt trace.
 
 Prompt version gắn kết quả với cấu hình đã dùng; promote/rollback cho phép đổi và khôi phục hành vi. Token/cost phát hiện tăng chi phí; SLO và error budget lượng hóa chất lượng phục vụ. Hạn chế: LLM và quality score chỉ là mô phỏng; SHA cuối và nộp LMS sẽ xác nhận sau push.
+
+Bài học: validator xác nhận schema và phép tính nhưng không chứng minh giao diện runtime hoặc quan hệ cha-con của span; vì vậy tôi kiểm tra thêm dashboard và trace thật. Danh sách 12 trace và metadata ở evidence 06/08 là output Langfuse API, chưa phải ảnh giao diện tương ứng như tên gợi ý trong rubric. Đây là hạn chế evidence còn lại.
 
 ## 9. Checklist trước khi nộp
 
